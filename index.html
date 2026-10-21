@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>マグ送料API変更手順</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f6; --surface:#ffffff; --surface2:#f4f6fa; --fg:#18202e; --muted:#566074; --line:#cfd6e2;
+  --accent:#0f6b73; --accent-bg:#dcedee;
+  --bad:#a63d3d; --bad-bg:#f6e1e0;
+  --ok:#2c7a4b; --ok-bg:#dff0e5;
+  --warn:#946200; --warn-bg:#f8ecd0;
+  --focus:#0f6b73;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10151d; --surface:#171e29; --surface2:#1e2733; --fg:#e6eaf1; --muted:#9aa5b8; --line:#2f3b4d;
+    --accent:#5cc0c9; --accent-bg:#17353a;
+    --bad:#e58a87; --bad-bg:#3a2020;
+    --ok:#74c995; --ok-bg:#1b3325;
+    --warn:#e6bb62; --warn-bg:#392c11;
+    --focus:#5cc0c9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151d; --surface:#171e29; --surface2:#1e2733; --fg:#e6eaf1; --muted:#9aa5b8; --line:#2f3b4d;
+  --accent:#5cc0c9; --accent-bg:#17353a;
+  --bad:#e58a87; --bad-bg:#3a2020;
+  --ok:#74c995; --ok-bg:#1b3325;
+  --warn:#e6bb62; --warn-bg:#392c11;
+  --focus:#5cc0c9;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Zen Kaku Gothic New",system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px;line-height:1.8;overflow-x:hidden}
+.wrap{max-width:880px;margin:0 auto;padding-block:32px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.4;margin:0}
+h1{font-size:1.75rem;font-weight:700}
+h2{font-size:1.3rem;font-weight:700;margin-top:48px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+h3{font-size:1.05rem;font-weight:700;margin-top:24px}
+p,li{max-width:65ch}
+p{margin:12px 0}
+ul,ol{padding-left:1.4em;margin:12px 0}
+li{margin:6px 0}
+.meta{color:var(--muted);font-size:.9rem;margin-top:8px}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88em;background:var(--surface2);border:1px solid var(--line);padding:0 5px;word-break:break-word}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,.scroll:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.summary{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:16px 20px;margin-top:24px}
+.summary h2{font-size:1.05rem;border:0;margin:0 0 4px;padding:0}
+.scroll{overflow-x:auto;margin:16px 0;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;line-height:1.6}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface2);font-weight:700}
+tr:last-child td{border-bottom:0}
+.chip{display:inline-block;font-size:.75rem;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:baseline}
+.c-unk{color:var(--warn);background:var(--warn-bg);border-color:var(--warn)}
+.c-bad{color:var(--bad);background:var(--bad-bg);border-color:var(--bad)}
+.c-fact{color:var(--accent);background:var(--accent-bg);border-color:var(--accent)}
+.note{background:var(--surface2);border:1px solid var(--line);padding:10px 14px;font-size:.92rem;margin:16px 0}
+.key{background:var(--warn-bg);border:1px solid var(--warn);padding:12px 16px;margin:20px 0;font-weight:500}
+.key p{margin:0}
+.step{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:4px 18px 10px;margin:20px 0}
+.step h3{margin-top:12px}
+.step .no{display:inline-block;background:var(--accent);color:var(--bg);font-weight:700;border-radius:999px;min-width:1.8em;text-align:center;margin-right:8px;padding:0 6px}
+.who{font-size:.85rem;color:var(--muted)}
+.fig{overflow-x:auto;margin:16px 0;border:1px solid var(--line);background:var(--surface)}
+svg{display:block;width:100%;height:auto;min-width:640px}
+svg text{font-family:"Zen Kaku Gothic New",system-ui,"Hiragino Sans",sans-serif;font-size:14px;fill:var(--fg)}
+svg .sm{font-size:12px;fill:var(--muted)}
+svg .b{font-weight:700}
+.l{fill:var(--surface2);stroke:var(--line);stroke-width:1.2}
+.lb{fill:var(--bad-bg);stroke:var(--bad);stroke-width:1.5}
+.lw{fill:var(--warn-bg);stroke:var(--warn);stroke-width:1.5}
+.lo{fill:var(--ok-bg);stroke:var(--ok);stroke-width:1.5}
+.la{fill:var(--accent-bg);stroke:var(--accent);stroke-width:1.5}
+.ar{fill:none;stroke:var(--muted);stroke-width:2}
+.ara{fill:none;stroke:var(--accent);stroke-width:2.5}
+.ah{fill:var(--muted)}
+.aha{fill:var(--accent)}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.88rem}
+@media (max-width:520px){h1{font-size:1.45rem}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>eBaymag（マグ）の送料をAPIで変える手順</h1>
+<p class="meta">対象: eBayの受講者と、作業を行う開発担当 / 根拠: 2026年10月2日の実機検証（ある国のサイトで実施）</p>
+<p class="meta">表記: <span class="chip c-fact">確認済み</span> は実際に読み取りや試験で確かめた内容、<span class="chip c-unk">未確認</span> はまだ確かめていない内容です。MAG（マグ）は eBaymag のことです。</p>
+</header>
+
+<section class="summary" aria-labelledby="sum">
+<h2 id="sum">この記事でわかること</h2>
+<p>マグ経由で各国サイトに出ている商品の送料を、マグの画面を使わずに、eBayの公式APIだけで変える方法をまとめます。流れは「数える → ポリシーを書き換える → 出品ごとに付け直す → 確かめる」の4段階です。</p>
+<p>ただし、この方法ではマグの画面の数字は古いままになります。メリットと限界の両方を、下の説明で確認してください。</p>
+</section>
+
+<h2>1. 先に知っておくこと</h2>
+<ul>
+<li><span class="chip c-fact">確認済み</span> マグ自体には、公開されたAPIがありません。</li>
+<li>マグの画面をブラウザ操作で自動化する方法は、この手順では使いません。eBayの公式APIだけを使います。</li>
+<li><span class="chip c-fact">確認済み</span> マグが各国サイト（各国のeBayサイト）に作ったポリシーと出品は、eBayのアカウントに属しています。そのため、eBay公式APIで読み書きできます。</li>
+</ul>
+
+<h3>全体のイメージ</h3>
+<div class="fig" tabindex="0" role="img" aria-label="アメリカサイトの出品がマグ経由で各国サイトにコピーされ、API は各国サイトのポリシーと出品を直接操作する図">
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="ah"/></marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="aha"/></marker>
+  </defs>
+  <rect class="l" x="20" y="90" width="150" height="70" rx="6"/>
+  <text class="b" x="95" y="120" text-anchor="middle">アメリカサイト</text>
+  <text class="sm" x="95" y="142" text-anchor="middle">元のポリシーと出品</text>
+  <rect class="lw" x="215" y="90" width="120" height="70" rx="6"/>
+  <text class="b" x="275" y="120" text-anchor="middle">マグ</text>
+  <text class="sm" x="275" y="142" text-anchor="middle">コピーを作る</text>
+  <line class="ar" x1="170" y1="125" x2="213" y2="125" marker-end="url(#a1)"/>
+  <rect class="l" x="400" y="20" width="200" height="200" rx="6"/>
+  <text class="b" x="500" y="42" text-anchor="middle">各国サイト</text>
+  <rect class="la" x="420" y="56" width="160" height="70" rx="5"/>
+  <text x="500" y="82" text-anchor="middle">コピーされたポリシー</text>
+  <text class="sm" x="500" y="104" text-anchor="middle">（送料の行が1本）</text>
+  <rect class="la" x="420" y="140" width="160" height="62" rx="5"/>
+  <text x="500" y="166" text-anchor="middle">コピーされた出品</text>
+  <text class="sm" x="500" y="186" text-anchor="middle">ポリシーIDで紐づく</text>
+  <line class="ar" x1="335" y1="125" x2="398" y2="125" marker-end="url(#a1)"/>
+  <rect class="lo" x="640" y="90" width="105" height="70" rx="6"/>
+  <text class="b" x="692" y="120" text-anchor="middle">公式API</text>
+  <text class="sm" x="692" y="142" text-anchor="middle">直接読み書き</text>
+  <line class="ara" x1="640" y1="100" x2="582" y2="90" marker-end="url(#a2)"/>
+  <line class="ara" x1="640" y1="150" x2="582" y2="170" marker-end="url(#a2)"/>
+</svg>
+</div>
+
+<h2>2. 4つの手順</h2>
+<div class="fig" tabindex="0" role="img" aria-label="4段階の流れ: 数える、ポリシーを書き換える、出品に付け直す、確かめる">
+<svg viewBox="0 0 760 120" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="aha"/></marker></defs>
+  <rect class="l" x="10" y="25" width="160" height="70" rx="6"/>
+  <text class="b" x="90" y="52" text-anchor="middle">1. 数える</text>
+  <text class="sm" x="90" y="74" text-anchor="middle">サイト別・ポリシー別</text>
+  <rect class="la" x="205" y="25" width="160" height="70" rx="6"/>
+  <text class="b" x="285" y="52" text-anchor="middle">2. ポリシー書換</text>
+  <text class="sm" x="285" y="74" text-anchor="middle">送料だけ変える</text>
+  <rect class="lw" x="400" y="25" width="160" height="70" rx="6"/>
+  <text class="b" x="480" y="52" text-anchor="middle">3. 出品に付け直す</text>
+  <text class="sm" x="480" y="74" text-anchor="middle">出品ごとにRevise</text>
+  <rect class="lo" x="595" y="25" width="155" height="70" rx="6"/>
+  <text class="b" x="672" y="52" text-anchor="middle">4. 確かめる</text>
+  <text class="sm" x="672" y="74" text-anchor="middle">買い手の見え方</text>
+  <line class="ara" x1="170" y1="60" x2="203" y2="60" marker-end="url(#a3)"/>
+  <line class="ara" x1="365" y1="60" x2="398" y2="60" marker-end="url(#a3)"/>
+  <line class="ara" x1="560" y1="60" x2="593" y2="60" marker-end="url(#a3)"/>
+</svg>
+</div>
+
+<div class="step">
+<h3><span class="no">1</span>変える前に、全件を数える</h3>
+<p>どのサイトに、マグのポリシーを使う出品が何件あるかを、全件で数えます。「ポリシーがある」ことと「そのポリシーを使う出品がある」ことは別です。</p>
+<ul>
+<li>使うAPI: Trading API の <code>GetSellerList</code>（ページを最後までたどり、サイト別・ポリシー別に集計します）。</li>
+<li>APIが返した総数と、集めた件数が一致することを確かめます。</li>
+<li><span class="chip c-fact">確認済み</span> 検証時は、ポリシーだけがあって出品が0件のサイトがありました。最初に数えないと、意味のない検証をしてしまいます。</li>
+</ul>
+</div>
+
+<div class="step">
+<h3><span class="no">2</span>サイトのポリシーの送料を書き換える</h3>
+<p>使うAPI（Account API）: 読み取りは <code>getFulfillmentPolicies</code>（<code>marketplace_id</code> をクエリで指定。例: <code>EBAY_XX</code>、<code>XX</code> にはサイトの国コードが入ります。一般的な指定例: <code>EBAY_GB</code>（イギリス）・<code>EBAY_DE</code>（ドイツ）・<code>EBAY_FR</code>（フランス）・<code>EBAY_IT</code>（イタリア）・<code>EBAY_ES</code>（スペイン）・<code>EBAY_AU</code>（オーストラリア）・<code>EBAY_CA</code>（カナダ）など）または <code>getFulfillmentPolicy</code>（ポリシーIDで指定）。更新は <code>updateFulfillmentPolicy</code>（ポリシーIDで指定。<code>marketplaceId</code> を含む全体の内容を送ります）。</p>
+<ol>
+<li>ポリシー全体を GET で読み取る。</li>
+<li>読み取った内容を、控えファイルとして保存する（元に戻すための保険です）。</li>
+<li>送料の金額だけを変えた全体の内容を、PUT で送る。</li>
+<li>もう一度 GET で読み直し、控えと比べて、変えた項目だけが違うことを確かめる。</li>
+</ol>
+<p class="note"><span class="chip c-fact">確認済み</span> 書き換えは成功し、読み直しで全項目が一致しました。別の機会（本体ポリシーの更新）では、更新が <code>20500</code> エラーを返したのに、読み直すと実際には反映されていた事例がありました。エラーが出たら再送せず、必ず読み直して確かめてください。</p>
+</div>
+
+<div class="step">
+<h3><span class="no">3</span>出品ごとに、同じポリシーを付け直す</h3>
+<p>ポリシーを書き換えただけでは、出品の送料は変わりません。出品1件ずつに、同じポリシーIDをもう一度付ける更新（Revise）が必要です。</p>
+<ul>
+<li>使うAPI: Trading API の <code>ReviseFixedPriceItem</code>（<code>SellerProfiles</code> に同じポリシーIDを指定。サイトは、その出品があるサイトを指定します）。</li>
+<li>件数が多い場合は、Sell Feed API の一括更新（<code>LMS_REVISE_FIXED_PRICE_ITEM</code>）を使う方法もあります。<span class="chip c-unk">未確認</span> 一括更新は今回の検証では試していません。</li>
+</ul>
+<div class="fig" tabindex="0" role="img" aria-label="ポリシーを書き換えただけでは出品は古い送料のまま、Reviseで新しい送料になる図">
+<svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="aha"/></marker></defs>
+  <rect class="la" x="10" y="20" width="200" height="60" rx="6"/>
+  <text class="b" x="110" y="46" text-anchor="middle">ポリシー</text>
+  <text class="sm" x="110" y="66" text-anchor="middle">書き換え後: 新しい送料</text>
+  <rect class="lb" x="10" y="100" width="200" height="60" rx="6"/>
+  <text class="b" x="110" y="126" text-anchor="middle">出品（書換のみ）</text>
+  <text class="sm" x="110" y="146" text-anchor="middle">約6時間後も古い送料</text>
+  <rect class="lo" x="330" y="100" width="200" height="60" rx="6"/>
+  <text class="b" x="430" y="126" text-anchor="middle">出品（Revise後）</text>
+  <text class="sm" x="430" y="146" text-anchor="middle">新しい送料になる</text>
+  <line class="ara" x1="212" y1="130" x2="328" y2="130" marker-end="url(#a4)"/>
+  <text class="sm" x="270" y="120" text-anchor="middle">Revise</text>
+  <text class="sm" x="560" y="120">同じポリシーIDを</text>
+  <text class="sm" x="560" y="140">付け直すと反映</text>
+</svg>
+</div>
+</div>
+
+<div class="step">
+<h3><span class="no">4</span>買い手から見える送料で確かめる</h3>
+<ul>
+<li>使うAPI: Browse API の <code>getItem</code>。ヘッダー <code>X-EBAY-C-ENDUSERCTX</code> に <code>contextualLocation=country=XX</code> の形で国コードを指定します（郵便番号を足せます）。その国の買い手に見える送料が返ります。<span class="chip c-fact">確認済み</span> この方法は 2026-10-21 に国別の送料を見るのに使えました。10-02 の検証で使った方法ではありません。</li>
+<li>書き換え前後で、国ごとの送料を比べます。</li>
+</ul>
+<p><span class="chip c-fact">確認済み</span> 2026-10-02 の検証では、Trading API で出品を読み直して送料が 0.0 から 1.0 に変わったことと、商品ページの表示が「送料無料」から元の値より少し高い金額に変わったことを確かめました（Browse API ではありません）。少し高くなる理由は <span class="chip c-unk">未確認</span> です。</p>
+</div>
+
+<h2>3. 注意すること</h2>
+<div class="key"><p>マグの画面は、API で変えた内容を反映しません。約6時間たっても、画面は元の数字のままでした。マグの設定と実際の出品が食い違った状態になります。</p></div>
+<ul>
+<li><span class="chip c-fact">確認済み</span> マグは、最後の書き込みから約6時間のあいだ、API で変えた内容を書き戻しませんでした。</li>
+<li><span class="chip c-unk">未確認</span> マグの「Apply changes」や「Resync Shipping Profile」を押したとき、API で変えた内容がマグ側の数字で上書きされるかは、試していません。</li>
+<li><span class="chip c-unk">未確認</span> 「Resync Shipping Profile」で、元の（アメリカ側）ポリシーの変更が本当に取り込まれるかも、試していません。公式ヘルプの中でも、取り込まれると書いてあるページと、再同期されないと書いてあるページがあり、食い違っています。</li>
+<li><span class="chip c-fact">確認済み</span> 2026-10-21 のAPI読み取りで確認: マグが作る各国サイトのポリシーのコピーは、配送サービスの行が1本で、国ごとの行は持っていません。各国のポリシーに国別の行を足せるかは、<span class="chip c-unk">未確認</span>（試していません）。</li>
+<li><span class="chip c-unk">推定</span> マグがコピーするのは、配送サービスの行の送料だけで、送料表（rate table）の金額はコピーされないと考えられます。2件の比較からの推定で、反例は試していません。</li>
+<li><span class="chip c-fact">確認済み</span> 別の利用者の事例で、マグに「元の配送情報がないため、再同期できません」と表示されることを確認しました。原因は、元のアメリカ側ポリシーを削除したことだと<span class="chip c-unk">推定</span>しています（マグは元ポリシーとIDで結びつくため）。</li>
+<li>同じ種類の配送サービスの行が重なると、マグは国ごとに安い方を残します。そのため「Worldwide $0」の行があると、ヨーロッパ向けの$7が$0に負けます。この点は、別の調査報告で 2026-10-21 に確認しています。詳しくは <a href="https://naokijodan.github.io/ebaymag-worldwide-shipping-report/">マグ送料ゼロ問題の調査報告</a> をご覧ください。</li>
+</ul>
+
+<h3>一度APIで変えたら、その後の変更もその都度APIで</h3>
+<div class="key"><p>APIで変えた内容はマグの画面に反映されません（<span class="chip c-fact">確認済み</span> 2026-10-02）。そのため、マグの画面は古い数字のままで、実際の出品とずれていきます。</p></div>
+<ul>
+<li><span class="chip c-unk">推定</span> ずれた状態のままなので、以後の送料変更も、その都度APIで行う必要があると考えられます。</li>
+<li><span class="chip c-unk">推定</span> マグの画面で送料を編集すると、古い数字を出発点にすることになります。</li>
+<li><span class="chip c-unk">未確認</span> マグの「Apply changes」や「Resync Shipping Profile」で、API の変更が元に戻るか。</li>
+<li><span class="chip c-unk">未確認</span> API で変えた後にマグが新しく作る出品が、変更後のポリシーの送料を使うか。</li>
+</ul>
+
+<h3>安全のための決まり</h3>
+<ol>
+<li>書き込む前に、必ず控え（バックアップ）を取る。</li>
+<li>失敗した書き込みを、自動で再送しない。必ず読み直して、反映されたかどうかを確かめてから判断する。</li>
+<li>最初は、ポリシー1つ・出品1件だけで試す。問題がなければ広げる。</li>
+<li>試験で値を変えたときは、控えと比べて差が0件になるまで元に戻す。</li>
+</ol>
+
+<h2>4. 確認済みと未確認の一覧</h2>
+<div class="scroll" tabindex="0" role="region" aria-label="確認済みと未確認の一覧">
+<table>
+<thead><tr><th>内容</th><th>状態</th></tr></thead>
+<tbody>
+<tr><td>マグ自体に公開APIは無い</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>各国サイトのポリシーと出品は、公式API（Account API / Trading API）で読み書きできる</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>ポリシーの書き換えだけでは、約6時間たっても出品の送料は変わらない（ある国のサイトで確認）</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>同じポリシーIDを付け直すReviseで、出品の送料が変わる（ある国のサイトで確認）</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>マグの画面は、直後も約6時間後も反映されない</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>マグが約6時間、書き戻しをしなかった</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>別の機会（本体ポリシーの更新）で、20500エラーでも実際は反映されていた</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>別の利用者の事例で、マグに「再同期できません」と表示される</td><td><span class="chip c-fact">確認済み</span>（原因の「元ポリシー削除」は <span class="chip c-unk">推定</span>）</td></tr>
+<tr><td>各国サイトのポリシーのコピーは、配送サービスの行が1本（2026-10-21 のAPI読み取り）</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>マグがコピーするのは配送サービスの行の送料だけで、送料表の金額はコピーされない</td><td><span class="chip c-unk">推定</span>（2件の比較から。反例は未試験）</td></tr>
+<tr><td>Browse API getItem に国コードを指定すると、国別の買い手向け送料が見える（2026-10-21 に使用）</td><td><span class="chip c-fact">確認済み</span></td></tr>
+<tr><td>API で変えた後は、以後の変更もその都度APIで行う必要がある</td><td><span class="chip c-unk">推定</span></td></tr>
+<tr><td>API変更後にマグが新しく作る出品が、API で変えたポリシーの送料を使うか</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>マグの「Apply changes」「Resync Shipping Profile」が、API で変えた内容を上書きするか</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>「Resync Shipping Profile」が、元のポリシーの変更を本当に取り込むか</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>各国サイトのポリシーに、国別の行を足せるか</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>Sell Feed API の一括更新で同じことができるか</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>商品ページの表示が、入れた値より少し高くなる理由</td><td><span class="chip c-unk">未確認</span></td></tr>
+<tr><td>検証したサイト以外でも同じ結果になるか（検証したのは1つの国のサイトのみ）</td><td><span class="chip c-unk">未確認</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>5. まとめ</h2>
+<ol>
+<li>マグの画面を使わなくても、各国サイトのポリシーと出品は、eBay公式APIで直接変えられます。</li>
+<li>手順は「全件を数える → ポリシーの送料を書き換える → 出品ごとに同じポリシーIDを付け直す → 買い手から見える送料で確かめる」です。</li>
+<li>ポリシーの書き換えだけでは、出品の送料は変わりません。出品ごとの付け直しが必要です。</li>
+<li>マグの画面は古い数字のままになります。マグで「Apply changes」などを押したときの動きは未確認なので、慎重に扱ってください。</li>
+<li>必ず控えを取り、失敗した書き込みは再送せず、まず1件で試してください。</li>
+</ol>
+
+<footer>
+<p>この記事は、2026年10月2日にある国のサイトで行った実機検証と、公式ヘルプの記載にもとづいています。未確認と書いた点は、確かめられるまで事実として扱わないでください。</p>
+</footer>
+</div>
+</body>
+</html>
